@@ -17,6 +17,11 @@ jobs:
     name: CI - dbt tests & compile
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_NAME }}
+      DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+      DATABRICKS_CATALOG: ${{ secrets.DATABRICKS_CATALOG }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,17 +36,34 @@ jobs:
 
       - name: Generate profiles.yml
         run: |
-          echo "dbt_proj_to:" > profiles.yml
-          echo "  target: dev" >> profiles.yml
-          echo "  outputs:" >> profiles.yml
-          echo "    dev:" >> profiles.yml
-          echo "      type: databricks" >> profiles.yml
-          echo "      host: ${{ secrets.DATABRICKS_HOST_NAME }}" >> profiles.yml
-          echo "      http_path: ${{ secrets.DATABRICKS_HTTP_PATH }}" >> profiles.yml
-          echo "      token: ${{ secrets.DATABRICKS_TOKEN }}" >> profiles.yml
-          echo "      catalog: ${{ secrets.DATABRICKS_CATALOG }}" >> profiles.yml
-          echo "      schema: default" >> profiles.yml
-          echo "      threads: 4" >> profiles.yml
+          python -c "
+          import yaml, os
+          profile = {
+              'dbt_proj_to': {
+                  'target': 'dev',
+                  'outputs': {
+                      'dev': {
+                          'type': 'databricks',
+                          'host': os.environ['DATABRICKS_HOST'],
+                          'http_path': os.environ['DATABRICKS_HTTP_PATH'],
+                          'token': os.environ['DATABRICKS_TOKEN'],
+                          'catalog': os.environ['DATABRICKS_CATALOG'],
+                          'schema': 'default',
+                          'threads': 4
+                      }
+                  }
+              }
+          }
+          with open('profiles.yml', 'w') as f:
+              yaml.dump(profile, f, default_flow_style=False)
+          "
+
+      - name: Debug profile
+        run: |
+          echo "Generated profiles.yml:"
+          cat profiles.yml
+          echo "Host length: ${#DATABRICKS_HOST}"
+          echo "Token length: ${#DATABRICKS_TOKEN}"
 
       - name: Install dependencies
         run: dbt deps
@@ -56,6 +78,11 @@ jobs:
     name: CD - dbt build (production)
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_NAME }}
+      DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+      DATABRICKS_CATALOG: ${{ secrets.DATABRICKS_CATALOG }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -70,17 +97,34 @@ jobs:
 
       - name: Generate profiles.yml
         run: |
-          echo "dbt_proj_to:" > profiles.yml
-          echo "  target: dev" >> profiles.yml
-          echo "  outputs:" >> profiles.yml
-          echo "    dev:" >> profiles.yml
-          echo "      type: databricks" >> profiles.yml
-          echo "      host: ${{ secrets.DATABRICKS_HOST_NAME }}" >> profiles.yml
-          echo "      http_path: ${{ secrets.DATABRICKS_HTTP_PATH }}" >> profiles.yml
-          echo "      token: ${{ secrets.DATABRICKS_TOKEN }}" >> profiles.yml
-          echo "      catalog: ${{ secrets.DATABRICKS_CATALOG }}" >> profiles.yml
-          echo "      schema: default" >> profiles.yml
-          echo "      threads: 4" >> profiles.yml
+          python -c "
+          import yaml, os
+          profile = {
+              'dbt_proj_to': {
+                  'target': 'dev',
+                  'outputs': {
+                      'dev': {
+                          'type': 'databricks',
+                          'host': os.environ['DATABRICKS_HOST'],
+                          'http_path': os.environ['DATABRICKS_HTTP_PATH'],
+                          'token': os.environ['DATABRICKS_TOKEN'],
+                          'catalog': os.environ['DATABRICKS_CATALOG'],
+                          'schema': 'default',
+                          'threads': 4
+                      }
+                  }
+              }
+          }
+          with open('profiles.yml', 'w') as f:
+              yaml.dump(profile, f, default_flow_style=False)
+          "
+
+      - name: Debug profile
+        run: |
+          echo "Generated profiles.yml:"
+          cat profiles.yml
+          echo "Host length: ${#DATABRICKS_HOST}"
+          echo "Token length: ${#DATABRICKS_TOKEN}"
 
       - name: Install dependencies
         run: dbt deps
