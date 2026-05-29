@@ -9,8 +9,8 @@ on:
       - master
 
 env:
-  DBT_PROFILES_DIR: .
-  DBT_PROJECT_DIR: .
+  DBT_PROFILES_DIR: ${{ github.workspace }}
+  DBT_PROJECT_DIR: ${{ github.workspace }}
 
 jobs:
   ci-checks:
@@ -29,29 +29,28 @@ jobs:
       - name: Install dbt
         run: pip install dbt-databricks
 
-      - name: Install dependencies
-        run: dbt deps
+      - name: Generate profiles.yml
+        run: python generate_profiles.py
         env:
           DBT_DATABRICKS_HOST_NAME: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
           DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
           DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
           DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
+
+      - name: Debug profile
+        run: |
+          echo "DBT_PROFILES_DIR=$DBT_PROFILES_DIR"
+          ls -la "$DBT_PROFILES_DIR/profiles.yml"
+          cat "$DBT_PROFILES_DIR/profiles.yml"
+
+      - name: Install dependencies
+        run: dbt deps
 
       - name: Check for broken models
         run: dbt compile
-        env:
-          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
-          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
-          DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
-          DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
 
       - name: Run dbt tests
         run: dbt test
-        env:
-          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
-          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
-          DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
-          DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
 
   cd-build:
     name: CD - dbt build (production)
@@ -69,34 +68,28 @@ jobs:
       - name: Install dbt
         run: pip install dbt-databricks
 
-      - name: Install dependencies
-        run: dbt deps
+      - name: Generate profiles.yml
+        run: python generate_profiles.py
         env:
           DBT_DATABRICKS_HOST_NAME: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
           DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
           DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
           DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
+
+      - name: Debug profile
+        run: |
+          echo "DBT_PROFILES_DIR=$DBT_PROFILES_DIR"
+          ls -la "$DBT_PROFILES_DIR/profiles.yml"
+          cat "$DBT_PROFILES_DIR/profiles.yml"
+
+      - name: Install dependencies
+        run: dbt deps
 
       - name: Check for broken models
         run: dbt compile
-        env:
-          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
-          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
-          DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
-          DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
 
       - name: Run dbt build (tests + models + seeds + snapshots)
         run: dbt build
-        env:
-          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
-          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
-          DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
-          DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
 
       - name: Run source freshness
         run: dbt source freshness
-        env:
-          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
-          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
-          DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
-          DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
