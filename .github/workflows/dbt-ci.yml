@@ -1,12 +1,92 @@
-name: dbt CI
-on: [push, pull_request]
+name: dbt CI/CD
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+env:
+  DBT_PROFILES_DIR: .
+  DBT_PROJECT_DIR: .
+
 jobs:
-  test:
+  ci-checks:
+    name: CI - dbt tests & compile
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: pip install dbt-databricks
-      - run: dbt deps
-      - run: dbt compile
-      - run: dbt test
-      - run: dbt source freshness
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dbt
+        run: pip install dbt-databricks
+
+      - name: Install dependencies
+        run: dbt deps
+        env:
+          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DATABRICKS_HOST }}
+          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
+          DBT_DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DBT_DATABRICKS_CATALOG: ${{ secrets.DATABRICKS_CATALOG }}
+
+      - name: Check for broken models
+        run: dbt compile
+
+      - name: Run dbt tests
+        run: dbt test
+        env:
+          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DATABRICKS_HOST }}
+          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
+          DBT_DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DBT_DATABRICKS_CATALOG: ${{ secrets.DATABRICKS_CATALOG }}
+
+  cd-build:
+    name: CD - dbt build (production)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dbt
+        run: pip install dbt-databricks
+
+      - name: Install dependencies
+        run: dbt deps
+        env:
+          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DATABRICKS_HOST }}
+          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
+          DBT_DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DBT_DATABRICKS_CATALOG: ${{ secrets.DATABRICKS_CATALOG }}
+
+      - name: Check for broken models
+        run: dbt compile
+
+      - name: Run dbt build (tests + models + seeds + snapshots)
+        run: dbt build
+        env:
+          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DATABRICKS_HOST }}
+          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
+          DBT_DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DBT_DATABRICKS_CATALOG: ${{ secrets.DATABRICKS_CATALOG }}
+
+      - name: Run source freshness
+        run: dbt source freshness
+        env:
+          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DATABRICKS_HOST }}
+          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
+          DBT_DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DBT_DATABRICKS_CATALOG: ${{ secrets.DATABRICKS_CATALOG }}
