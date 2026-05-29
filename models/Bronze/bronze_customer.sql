@@ -7,5 +7,7 @@ select
     email,
     phone,
     loyalty_tier,
-    signup_date
+    signup_date,
+    'bronze' as record_source,
+    current_timestamp() as load_date
 from {{ source('source', 'dim_customer') }}
