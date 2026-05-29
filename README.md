@@ -39,3 +39,8 @@ dbt docs serve
 ```
 
 See `docs/project_diagram.md` for the interview brief, pictorial transformation diagram, lineage, and model-level explanation.
+
+## CI/CD
+
+- PRs trigger `dbt compile` + `dbt test`
+- Merges to master trigger `dbt build` + source freshness check
