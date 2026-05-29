@@ -29,24 +29,30 @@ jobs:
       - name: Install dbt
         run: pip install dbt-databricks
 
+      - name: Generate profiles.yml
+        run: |
+          cat > profiles.yml << EOF
+          dbt_proj_to:
+            target: dev
+            outputs:
+              dev:
+                type: databricks
+                host: ${{ secrets.DATABRICKS_HOST }}
+                http_path: ${{ secrets.DATABRICKS_HTTP_PATH }}
+                token: ${{ secrets.DATABRICKS_TOKEN }}
+                catalog: ${{ secrets.DATABRICKS_CATALOG }}
+                schema: default
+                threads: 4
+          EOF
+
       - name: Install dependencies
         run: dbt deps
-        env:
-          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DATABRICKS_HOST }}
-          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
-          DBT_DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-          DBT_DATABRICKS_CATALOG: ${{ secrets.DATABRICKS_CATALOG }}
 
       - name: Check for broken models
         run: dbt compile
 
       - name: Run dbt tests
         run: dbt test
-        env:
-          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DATABRICKS_HOST }}
-          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
-          DBT_DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-          DBT_DATABRICKS_CATALOG: ${{ secrets.DATABRICKS_CATALOG }}
 
   cd-build:
     name: CD - dbt build (production)
@@ -64,29 +70,30 @@ jobs:
       - name: Install dbt
         run: pip install dbt-databricks
 
+      - name: Generate profiles.yml
+        run: |
+          cat > profiles.yml << EOF
+          dbt_proj_to:
+            target: dev
+            outputs:
+              dev:
+                type: databricks
+                host: ${{ secrets.DATABRICKS_HOST }}
+                http_path: ${{ secrets.DATABRICKS_HTTP_PATH }}
+                token: ${{ secrets.DATABRICKS_TOKEN }}
+                catalog: ${{ secrets.DATABRICKS_CATALOG }}
+                schema: default
+                threads: 4
+          EOF
+
       - name: Install dependencies
         run: dbt deps
-        env:
-          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DATABRICKS_HOST }}
-          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
-          DBT_DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-          DBT_DATABRICKS_CATALOG: ${{ secrets.DATABRICKS_CATALOG }}
 
       - name: Check for broken models
         run: dbt compile
 
       - name: Run dbt build (tests + models + seeds + snapshots)
         run: dbt build
-        env:
-          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DATABRICKS_HOST }}
-          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
-          DBT_DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-          DBT_DATABRICKS_CATALOG: ${{ secrets.DATABRICKS_CATALOG }}
 
       - name: Run source freshness
         run: dbt source freshness
-        env:
-          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DATABRICKS_HOST }}
-          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
-          DBT_DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-          DBT_DATABRICKS_CATALOG: ${{ secrets.DATABRICKS_CATALOG }}
