@@ -11,6 +11,7 @@ on:
       - "snapshots/**"
       - "dbt_project.yml"
       - "packages.yml"
+      - "requirements.txt"
       - "generate_profiles.py"
       - ".github/workflows/dbt-ci.yml"
   pull_request:
@@ -23,6 +24,7 @@ on:
       - "snapshots/**"
       - "dbt_project.yml"
       - "packages.yml"
+      - "requirements.txt"
       - "generate_profiles.py"
       - ".github/workflows/dbt-ci.yml"
   workflow_dispatch:
@@ -101,10 +103,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-dbt-packages-
 
-      - name: Install dbt
+      - name: Install dependencies
         run: |
-          pip install dbt-databricks~=${{ env.DBT_VERSION }}
+          pip install -r requirements.txt
           dbt --version
+          dbt deps
 
       - name: Generate profiles.yml
         run: python generate_profiles.py
@@ -113,9 +116,6 @@ jobs:
           DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
           DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
           DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
-
-      - name: Install dependencies
-        run: dbt deps
 
       - name: Compile models
         run: dbt compile
@@ -158,10 +158,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-dbt-packages-
 
-      - name: Install dbt
+      - name: Install dependencies
         run: |
-          pip install dbt-databricks~=${{ env.DBT_VERSION }}
+          pip install -r requirements.txt
           dbt --version
+          dbt deps
 
       - name: Generate profiles.yml
         run: python generate_profiles.py
@@ -170,9 +171,6 @@ jobs:
           DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
           DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
           DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
-
-      - name: Install dependencies
-        run: dbt deps
 
       - name: Compile models (pre-build check)
         run: dbt compile
