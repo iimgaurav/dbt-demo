@@ -31,19 +31,17 @@ jobs:
 
       - name: Generate profiles.yml
         run: |
-          cat > profiles.yml << EOF
-          dbt_proj_to:
-            target: dev
-            outputs:
-              dev:
-                type: databricks
-                host: ${{ secrets.DATABRICKS_HOST }}
-                http_path: ${{ secrets.DATABRICKS_HTTP_PATH }}
-                token: ${{ secrets.DATABRICKS_TOKEN }}
-                catalog: ${{ secrets.DATABRICKS_CATALOG }}
-                schema: default
-                threads: 4
-          EOF
+          echo "dbt_proj_to:" > profiles.yml
+          echo "  target: dev" >> profiles.yml
+          echo "  outputs:" >> profiles.yml
+          echo "    dev:" >> profiles.yml
+          echo "      type: databricks" >> profiles.yml
+          echo "      host: ${{ secrets.DATABRICKS_HOST_NAME }}" >> profiles.yml
+          echo "      http_path: ${{ secrets.DATABRICKS_HTTP_PATH }}" >> profiles.yml
+          echo "      token: ${{ secrets.DATABRICKS_TOKEN }}" >> profiles.yml
+          echo "      catalog: ${{ secrets.DATABRICKS_CATALOG }}" >> profiles.yml
+          echo "      schema: default" >> profiles.yml
+          echo "      threads: 4" >> profiles.yml
 
       - name: Install dependencies
         run: dbt deps
@@ -72,19 +70,17 @@ jobs:
 
       - name: Generate profiles.yml
         run: |
-          cat > profiles.yml << EOF
-          dbt_proj_to:
-            target: dev
-            outputs:
-              dev:
-                type: databricks
-                host: ${{ secrets.DATABRICKS_HOST }}
-                http_path: ${{ secrets.DATABRICKS_HTTP_PATH }}
-                token: ${{ secrets.DATABRICKS_TOKEN }}
-                catalog: ${{ secrets.DATABRICKS_CATALOG }}
-                schema: default
-                threads: 4
-          EOF
+          echo "dbt_proj_to:" > profiles.yml
+          echo "  target: dev" >> profiles.yml
+          echo "  outputs:" >> profiles.yml
+          echo "    dev:" >> profiles.yml
+          echo "      type: databricks" >> profiles.yml
+          echo "      host: ${{ secrets.DATABRICKS_HOST_NAME }}" >> profiles.yml
+          echo "      http_path: ${{ secrets.DATABRICKS_HTTP_PATH }}" >> profiles.yml
+          echo "      token: ${{ secrets.DATABRICKS_TOKEN }}" >> profiles.yml
+          echo "      catalog: ${{ secrets.DATABRICKS_CATALOG }}" >> profiles.yml
+          echo "      schema: default" >> profiles.yml
+          echo "      threads: 4" >> profiles.yml
 
       - name: Install dependencies
         run: dbt deps
