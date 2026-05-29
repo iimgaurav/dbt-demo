@@ -29,18 +29,17 @@ jobs:
       - name: Install dbt
         run: pip install dbt-databricks
 
-      - name: Generate profiles.yml
-        run: python generate_profiles.py
-        env:
-          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
-          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
-          DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
-          DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
-
-      - name: Debug profile
+      - name: Set Databricks env vars
         run: |
-          echo "Generated profiles.yml:"
-          cat profiles.yml
+          echo "DBT_DATABRICKS_HOST_NAME=$(echo "$RAW_HOST" | tr -d '\r\n')" >> "$GITHUB_ENV"
+          echo "DBT_DATABRICKS_HTTP_PATH=$(echo "$RAW_PATH" | tr -d '\r\n')" >> "$GITHUB_ENV"
+          echo "DBT_DATABRICKS_TOKEN=$(echo "$RAW_TOKEN" | tr -d '\r\n')" >> "$GITHUB_ENV"
+          echo "DBT_DATABRICKS_CATALOG=$(echo "$RAW_CATALOG" | tr -d '\r\n')" >> "$GITHUB_ENV"
+        env:
+          RAW_HOST: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
+          RAW_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
+          RAW_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
+          RAW_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
 
       - name: Install dependencies
         run: dbt deps
@@ -67,18 +66,17 @@ jobs:
       - name: Install dbt
         run: pip install dbt-databricks
 
-      - name: Generate profiles.yml
-        run: python generate_profiles.py
-        env:
-          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
-          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
-          DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
-          DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
-
-      - name: Debug profile
+      - name: Set Databricks env vars
         run: |
-          echo "Generated profiles.yml:"
-          cat profiles.yml
+          echo "DBT_DATABRICKS_HOST_NAME=$(echo "$RAW_HOST" | tr -d '\r\n')" >> "$GITHUB_ENV"
+          echo "DBT_DATABRICKS_HTTP_PATH=$(echo "$RAW_PATH" | tr -d '\r\n')" >> "$GITHUB_ENV"
+          echo "DBT_DATABRICKS_TOKEN=$(echo "$RAW_TOKEN" | tr -d '\r\n')" >> "$GITHUB_ENV"
+          echo "DBT_DATABRICKS_CATALOG=$(echo "$RAW_CATALOG" | tr -d '\r\n')" >> "$GITHUB_ENV"
+        env:
+          RAW_HOST: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
+          RAW_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
+          RAW_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
+          RAW_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
 
       - name: Install dependencies
         run: dbt deps
