@@ -1,16 +1,19 @@
 import yaml
 import os
 
+def clean(val):
+    return val.replace('\r', '').replace('\n', '').strip()
+
 profile = {
     'dbt_proj_to': {
         'target': 'dev',
         'outputs': {
             'dev': {
                 'type': 'databricks',
-                'host': os.environ['DBT_DATABRICKS_HOST_NAME'].strip(),
-                'http_path': os.environ['DBT_DATABRICKS_HTTP_PATH'].strip(),
-                'token': os.environ['DBT_DATABRICKS_TOKEN'].strip(),
-                'catalog': os.environ['DBT_DATABRICKS_CATALOG'].strip(),
+                'host': clean(os.environ['DBT_DATABRICKS_HOST_NAME']),
+                'http_path': clean(os.environ['DBT_DATABRICKS_HTTP_PATH']),
+                'token': clean(os.environ['DBT_DATABRICKS_TOKEN']),
+                'catalog': clean(os.environ['DBT_DATABRICKS_CATALOG']),
                 'schema': 'default',
                 'threads': 4
             }
