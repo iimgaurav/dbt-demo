@@ -1,0 +1,20 @@
+version: 2
+
+sources:
+  - name: source
+    database: dbt_tutorial_dev
+    schema: source
+    description: "Raw source schema for sales, returns, and supporting dimensions."
+    tables:
+      - name: fact_sales
+        description: "Raw sales transactions."
+      - name: dim_customer
+        description: "Raw customer dimension."
+      - name: dim_product
+        description: "Raw product dimension."
+      - name: dim_date
+        description: "Raw calendar date dimension."
+      - name: dim_store
+        description: "Raw store dimension."
+      - name: fact_returns
+        description: "Raw return transactions."

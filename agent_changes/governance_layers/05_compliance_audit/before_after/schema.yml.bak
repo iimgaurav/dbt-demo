@@ -1,0 +1,14 @@
+version: 2
+models:
+  - name: stg_customers
+    description: "Staging table for raw customer data from CRM."
+    meta: { owner: "@data_team", sensitivity: "internal" }
+    columns:
+      - name: customer_id
+        description: "Primary key for customers."
+        meta: { pii: false }
+      - name: email
+        description: "Customer email address."
+        meta: { pii: true }
+      - name: status
+        description: "Customer status (active/inactive)."

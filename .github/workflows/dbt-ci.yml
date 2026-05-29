@@ -1,0 +1,12 @@
+name: dbt CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install dbt-databricks
+      - run: dbt deps
+      - run: dbt compile
+      - run: dbt test
+      - run: dbt source freshness

@@ -1,0 +1,44 @@
+version: 2
+
+models:
+  - name: gold_daily_sales
+    description: "Daily sales aggregation for trend analysis."
+    columns:
+      - name: date
+        tests: [unique, not_null]
+      - name: total_revenue
+        tests: [not_null]
+
+  - name: gold_monthly_summary
+    description: "Monthly business summary with revenue, customers, products, stores, refunds, and return rate."
+    columns:
+      - name: year
+        tests: [not_null]
+      - name: month
+        tests: [not_null]
+
+  - name: gold_customer_metrics
+    description: "Customer-level KPIs for segmentation and lifetime value analysis."
+    columns:
+      - name: customer_sk
+        tests: [unique, not_null]
+
+  - name: gold_customer_ltv
+    description: "Customer lifetime value calculated from cleaned sales transactions."
+    columns:
+      - name: customer_sk
+        tests: [unique, not_null]
+      - name: lifetime_value
+        tests: [not_null]
+
+  - name: gold_product_performance
+    description: "Product-level KPIs including revenue, units sold, refunds, and return rate."
+    columns:
+      - name: product_sk
+        tests: [unique, not_null]
+
+  - name: gold_store_performance
+    description: "Store-level KPIs including revenue, transactions, refunds, and return rate."
+    columns:
+      - name: store_sk
+        tests: [unique, not_null]
