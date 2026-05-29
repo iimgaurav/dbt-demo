@@ -30,28 +30,12 @@ jobs:
         run: pip install dbt-databricks
 
       - name: Generate profiles.yml
-        run: |
-          python -c "
-          import yaml, os
-          profile = {
-              'dbt_proj_to': {
-                  'target': 'dev',
-                  'outputs': {
-                      'dev': {
-                          'type': 'databricks',
-                          'host': '${{ secrets.DBT_DATABRICKS_HOST_NAME }}',
-                          'http_path': '${{ secrets.DBT_DATABRICKS_HTTP_PATH }}',
-                          'token': '${{ secrets.DBT_DATABRICKS_TOKEN }}',
-                          'catalog': '${{ secrets.DBT_DATABRICKS_CATALOG }}',
-                          'schema': 'default',
-                          'threads': 4
-                      }
-                  }
-              }
-          }
-          with open('profiles.yml', 'w') as f:
-              yaml.dump(profile, f, default_flow_style=False)
-          "
+        run: python generate_profiles.py
+        env:
+          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
+          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
+          DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
+          DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
 
       - name: Debug profile
         run: |
@@ -84,28 +68,12 @@ jobs:
         run: pip install dbt-databricks
 
       - name: Generate profiles.yml
-        run: |
-          python -c "
-          import yaml, os
-          profile = {
-              'dbt_proj_to': {
-                  'target': 'dev',
-                  'outputs': {
-                      'dev': {
-                          'type': 'databricks',
-                          'host': '${{ secrets.DBT_DATABRICKS_HOST_NAME }}',
-                          'http_path': '${{ secrets.DBT_DATABRICKS_HTTP_PATH }}',
-                          'token': '${{ secrets.DBT_DATABRICKS_TOKEN }}',
-                          'catalog': '${{ secrets.DBT_DATABRICKS_CATALOG }}',
-                          'schema': 'default',
-                          'threads': 4
-                      }
-                  }
-              }
-          }
-          with open('profiles.yml', 'w') as f:
-              yaml.dump(profile, f, default_flow_style=False)
-          "
+        run: python generate_profiles.py
+        env:
+          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
+          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
+          DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
+          DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
 
       - name: Debug profile
         run: |
