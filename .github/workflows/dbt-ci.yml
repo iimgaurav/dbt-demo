@@ -39,10 +39,10 @@ jobs:
                   'outputs': {
                       'dev': {
                           'type': 'databricks',
-                          'host': '${{ secrets.DATABRICKS_HOST_NAME }}',
-                          'http_path': '${{ secrets.DATABRICKS_HTTP_PATH }}',
-                          'token': '${{ secrets.DATABRICKS_TOKEN }}',
-                          'catalog': '${{ secrets.DATABRICKS_CATALOG }}',
+                          'host': '${{ secrets.DBT_DATABRICKS_HOST_NAME }}',
+                          'http_path': '${{ secrets.DBT_DATABRICKS_HTTP_PATH }}',
+                          'token': '${{ secrets.DBT_DATABRICKS_TOKEN }}',
+                          'catalog': '${{ secrets.DBT_DATABRICKS_CATALOG }}',
                           'schema': 'default',
                           'threads': 4
                       }
@@ -93,10 +93,10 @@ jobs:
                   'outputs': {
                       'dev': {
                           'type': 'databricks',
-                          'host': '${{ secrets.DATABRICKS_HOST_NAME }}',
-                          'http_path': '${{ secrets.DATABRICKS_HTTP_PATH }}',
-                          'token': '${{ secrets.DATABRICKS_TOKEN }}',
-                          'catalog': '${{ secrets.DATABRICKS_CATALOG }}',
+                          'host': '${{ secrets.DBT_DATABRICKS_HOST_NAME }}',
+                          'http_path': '${{ secrets.DBT_DATABRICKS_HTTP_PATH }}',
+                          'token': '${{ secrets.DBT_DATABRICKS_TOKEN }}',
+                          'catalog': '${{ secrets.DBT_DATABRICKS_CATALOG }}',
                           'schema': 'default',
                           'threads': 4
                       }
