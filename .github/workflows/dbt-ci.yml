@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+      - main
+      - uat
     paths:
       - "models/**"
       - "macros/**"
@@ -17,6 +19,8 @@ on:
   pull_request:
     branches:
       - master
+      - main
+      - uat
     paths:
       - "models/**"
       - "macros/**"
@@ -78,8 +82,9 @@ jobs:
           fi
           echo "No secrets found in code"
 
+  # CI: PR builds compile and test against dev catalog
   ci-checks:
-    name: CI - dbt compile & test
+    name: CI - dbt compile & test (dev)
     needs: lint
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -115,13 +120,13 @@ jobs:
           DBT_DATABRICKS_HOST_NAME: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
           DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
           DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
-          DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
+          DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG_DEV }}
 
       - name: Compile models
-        run: dbt compile
+        run: dbt compile --target dev
 
       - name: Run dbt tests
-        run: dbt test
+        run: dbt test --target dev
 
       - name: Upload compiled artifacts
         if: always()
@@ -131,10 +136,83 @@ jobs:
           path: target/
           retention-days: 3
 
-  cd-build:
-    name: CD - dbt build
+  # CD: Push to uat branch builds and tests against uat catalog
+  cd-uat:
+    name: CD - Build UAT
     needs: lint
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/uat'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: uat
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Cache dbt packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.dbt/packages
+          key: ${{ runner.os }}-dbt-packages-${{ hashFiles('packages.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-dbt-packages-
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          dbt --version
+          dbt deps
+
+      - name: Generate profiles.yml
+        run: python generate_profiles.py
+        env:
+          DBT_DATABRICKS_HOST_NAME: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
+          DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
+          DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
+          DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG_UAT }}
+
+      - name: Compile models (pre-build check)
+        run: dbt compile --target uat
+
+      - name: Run dbt build
+        id: build
+        run: |
+          dbt build --target uat --full-refresh 2>&1 | tee build.log
+          echo "build_status=success" >> $GITHUB_OUTPUT
+
+      - name: Run source freshness
+        if: steps.build.outputs.build_status == 'success'
+        run: dbt source freshness --target uat
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uat-build-logs
+          path: |
+            build.log
+            target/run_results.json
+            target/manifest.json
+          retention-days: 7
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::dbt build failed on uat branch"
+          echo "Check logs at: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+  # CD: Push to master builds and tests against prod catalog
+  cd-production:
+    name: CD - Build Production
+    needs: lint
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment:
@@ -170,38 +248,39 @@ jobs:
           DBT_DATABRICKS_HOST_NAME: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
           DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
           DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
-          DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
+          DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG_PROD }}
 
       - name: Compile models (pre-build check)
-        run: dbt compile
+        run: dbt compile --target prod
 
       - name: Run dbt build
         id: build
         run: |
-          dbt build --full-refresh 2>&1 | tee build.log
+          dbt build --target prod --full-refresh 2>&1 | tee build.log
           echo "build_status=success" >> $GITHUB_OUTPUT
 
       - name: Run source freshness
         if: steps.build.outputs.build_status == 'success'
-        run: dbt source freshness
+        run: dbt source freshness --target prod
 
       - name: Upload build logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cd-build-logs
+          name: prod-build-logs
           path: |
             build.log
             target/run_results.json
             target/manifest.json
-          retention-days: 7
+          retention-days: 30
 
       - name: Notify on failure
         if: failure()
         run: |
-          echo "::error::dbt build failed on master branch"
+          echo "::error::dbt build failed on production"
           echo "Check logs at: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
+  # Validate secrets on manual trigger
   validate-secrets:
     name: Validate Secrets
     runs-on: ubuntu-latest
@@ -215,12 +294,17 @@ jobs:
           [ -z "$DBT_DATABRICKS_HOST_NAME" ] && echo "ERROR: DBT_DATABRICKS_HOST_NAME not set" && exit 1
           [ -z "$DBT_DATABRICKS_HTTP_PATH" ] && echo "ERROR: DBT_DATABRICKS_HTTP_PATH not set" && exit 1
           [ -z "$DBT_DATABRICKS_TOKEN" ] && echo "ERROR: DBT_DATABRICKS_TOKEN not set" && exit 1
-          [ -z "$DBT_DATABRICKS_CATALOG" ] && echo "ERROR: DBT_DATABRICKS_CATALOG not set" && exit 1
+          [ -z "$DBT_DATABRICKS_CATALOG_DEV" ] && echo "ERROR: DBT_DATABRICKS_CATALOG_DEV not set" && exit 1
+          [ -z "$DBT_DATABRICKS_CATALOG_UAT" ] && echo "ERROR: DBT_DATABRICKS_CATALOG_UAT not set" && exit 1
+          [ -z "$DBT_DATABRICKS_CATALOG_PROD" ] && echo "ERROR: DBT_DATABRICKS_CATALOG_PROD not set" && exit 1
           echo "All secrets validated successfully"
-          echo "Host: ${DBT_DATABRICKS_HOST_NAME:0:10}..."
-          echo "Catalog: $DBT_DATABRICKS_CATALOG"
+          echo "DEV catalog:  $DBT_DATABRICKS_CATALOG_DEV"
+          echo "UAT catalog:  $DBT_DATABRICKS_CATALOG_UAT"
+          echo "PROD catalog: $DBT_DATABRICKS_CATALOG_PROD"
         env:
           DBT_DATABRICKS_HOST_NAME: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
           DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
           DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
-          DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
+          DBT_DATABRICKS_CATALOG_DEV: ${{ secrets.DBT_DATABRICKS_CATALOG_DEV }}
+          DBT_DATABRICKS_CATALOG_UAT: ${{ secrets.DBT_DATABRICKS_CATALOG_UAT }}
+          DBT_DATABRICKS_CATALOG_PROD: ${{ secrets.DBT_DATABRICKS_CATALOG_PROD }}
