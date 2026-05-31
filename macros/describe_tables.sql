@@ -1,11 +1,11 @@
 {% macro describe_sources() %}
   {% set tables = [
-    ('dbt_tutorial_dev', 'source', 'fact_sales'),
-    ('dbt_tutorial_dev', 'source', 'dim_customer'),
-    ('dbt_tutorial_dev', 'source', 'dim_product'),
-    ('dbt_tutorial_dev', 'source', 'dim_date'),
-    ('dbt_tutorial_dev', 'source', 'dim_store'),
-    ('dbt_tutorial_dev', 'source', 'fact_returns')
+    ('dbt_tutorial_dev', 'source', 'sales'),
+    ('dbt_tutorial_dev', 'source', 'customer'),
+    ('dbt_tutorial_dev', 'source', 'product'),
+    ('dbt_tutorial_dev', 'source', 'date'),
+    ('dbt_tutorial_dev', 'source', 'store'),
+    ('dbt_tutorial_dev', 'source', 'returns')
   ] %}
   {% for db, schema, table in tables %}
     {{ log('=== ' ~ table ~ ' ===', info=True) }}

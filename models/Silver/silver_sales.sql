@@ -1,9 +1,3 @@
-{{
-  config(
-    materialized = 'table'
-  )
-}}
-
 WITH cleaned_sales AS (
     SELECT
         sales_id,

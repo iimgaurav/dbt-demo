@@ -2,49 +2,164 @@ version: 2
 
 models:
   - name: silver_customer
-    description: "Cleaned customer dimension with tenure classification."
+    description: "Cleaned customer dimension with tenure classification. Filters out null customer_sk records."
     columns:
       - name: customer_sk
+        description: "Surrogate key for the customer."
         tests: [unique, not_null]
+      - name: customer_code
+        description: "Business customer identifier."
+      - name: first_name
+        description: "Customer first name."
+      - name: last_name
+        description: "Customer last name."
+      - name: gender
+        description: "Customer gender."
+      - name: email
+        description: "Customer email address."
+      - name: phone
+        description: "Customer phone number."
+      - name: loyalty_tier
+        description: "Customer loyalty program tier."
+      - name: signup_date
+        description: "Date customer signed up."
       - name: customer_tenure
-        description: "Customer segment based on signup age."
+        description: "Customer segment based on signup age: new (< 6 months), regular (6-24 months), loyal (> 24 months)."
+      - name: ingested_at
+        description: "Timestamp when record was ingested into Silver layer."
 
   - name: silver_product
-    description: "Cleaned product dimension."
+    description: "Cleaned product dimension. Filters out null product_sk records."
     columns:
       - name: product_sk
+        description: "Surrogate key for the product."
         tests: [unique, not_null]
+      - name: product_code
+        description: "Business product identifier."
+      - name: product_name
+        description: "Name of the product."
+      - name: department
+        description: "Product department."
+      - name: category
+        description: "Product category."
+      - name: supplier_sk
+        description: "Surrogate key for the supplier."
+      - name: list_price
+        description: "List price of the product."
+      - name: uom
+        description: "Unit of measure."
+      - name: ingested_at
+        description: "Timestamp when record was ingested into Silver layer."
 
   - name: silver_store
-    description: "Cleaned store dimension with age classification."
+    description: "Cleaned store dimension with age classification. Filters out null store_sk records."
     columns:
       - name: store_sk
+        description: "Surrogate key for the store."
         tests: [unique, not_null]
+      - name: store_code
+        description: "Business store identifier."
+      - name: store_name
+        description: "Name of the store."
+      - name: city
+        description: "City where store is located."
+      - name: state_province
+        description: "State or province."
+      - name: region
+        description: "Geographic region."
+      - name: country
+        description: "Country where store is located."
+      - name: open_date
+        description: "Date store was opened."
+      - name: sq_ft
+        description: "Store size in square feet."
       - name: store_age_group
-        description: "Store segment based on open date."
+        description: "Store segment based on open date: new (< 2 years), established (2-10 years), legacy (> 10 years)."
+      - name: ingested_at
+        description: "Timestamp when record was ingested into Silver layer."
 
   - name: silver_date
-    description: "Cleaned date dimension with ingestion metadata."
+    description: "Cleaned date dimension with ingestion metadata. Filters out null date_sk records."
     columns:
       - name: date_sk
+        description: "Surrogate key for the calendar date."
         tests: [unique, not_null]
       - name: date
+        description: "Calendar date value."
         tests: [unique, not_null]
+      - name: year
+        description: "Calendar year."
+      - name: month
+        description: "Calendar month number."
+      - name: month_name
+        description: "Name of the month."
+      - name: day_of_week
+        description: "Day of the week."
+      - name: quarter
+        description: "Calendar quarter."
+      - name: is_weekend
+        description: "Flag indicating if date is a weekend."
+      - name: ingested_at
+        description: "Timestamp when record was ingested into Silver layer."
 
   - name: silver_sales
-    description: "Cleaned sales transactions with effective pricing."
+    description: "Cleaned sales transactions with effective pricing. Applies data quality rules: validates positive quantities/prices, caps outliers, standardizes text, and calculates effective price."
     columns:
       - name: sales_id
+        description: "Unique identifier for a sales transaction."
         tests: [unique, not_null]
+      - name: date_sk
+        description: "Foreign key to date dimension."
+      - name: store_sk
+        description: "Foreign key to store dimension."
+      - name: product_sk
+        description: "Foreign key to product dimension."
+      - name: customer_sk
+        description: "Foreign key to customer dimension."
+      - name: promotion_sk
+        description: "Foreign key to promotion dimension. Defaulted to -1 when null."
+      - name: quantity
+        description: "Number of units sold. Nullified if non-positive."
+      - name: unit_price
+        description: "Price per unit. Nullified if non-positive."
+      - name: gross_amount
+        description: "Gross sales amount before discount. Capped at 10000."
+      - name: discount_amount
+        description: "Discount amount applied."
       - name: net_amount
+        description: "Sales amount after discount."
         tests: [not_null]
+      - name: payment_method
+        description: "Payment method used (lowercased and trimmed)."
       - name: effective_price
         description: "Net amount divided by quantity with divide-by-zero protection."
+      - name: discount_percentage
+        description: "Discount as a percentage of gross amount."
+      - name: ingested_at
+        description: "Timestamp when record was ingested into Silver layer."
 
   - name: silver_returns
-    description: "Cleaned returns data."
+    description: "Cleaned returns data. Filters out null sales_id and non-positive returned_qty records."
     columns:
       - name: sales_id
+        description: "Foreign key to the original sales transaction."
         tests: [not_null]
+      - name: date_sk
+        description: "Foreign key to date dimension."
+      - name: store_sk
+        description: "Foreign key to store dimension."
+      - name: product_sk
+        description: "Foreign key to product dimension."
+      - name: customer_sk
+        description: "Foreign key to customer dimension."
+      - name: promotion_sk
+        description: "Foreign key to promotion dimension."
       - name: returned_qty
+        description: "Number of units returned."
         tests: [not_null]
+      - name: return_reason
+        description: "Reason for the return."
+      - name: refund_amount
+        description: "Amount refunded to customer."
+      - name: ingested_at
+        description: "Timestamp when record was ingested into Silver layer."

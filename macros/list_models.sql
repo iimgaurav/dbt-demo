@@ -1,17 +1,26 @@
 {% macro list_models() %}
-  {% set tables = [
-    'bronze_customer', 'bronze_product', 'bronze_store', 'bronze_date',
-    'bronze_sales', 'bronze_returns',
-    'silver_customer', 'silver_product', 'silver_store', 'silver_sales', 'silver_returns',
-    'gold_daily_sales', 'gold_store_performance', 'gold_product_performance',
-    'gold_customer_metrics', 'gold_monthly_summary'
-  ] %}
-  {% for t in tables %}
-    {% set rel = api.Relation.create(database='dbt_tutorial_dev', schema='default', identifier=t) %}
-    {% set cols = adapter.get_columns_in_relation(rel) %}
-    {{ log('=== ' ~ t ~ ' ===', info=True) }}
-    {% for col in cols %}
-      {{ log('  ' ~ col.name ~ ' (' ~ col.dtype ~ ')', info=True) }}
+    {# 
+        Dynamically lists all models in the project with their columns.
+        Usage: dbt run-operation list_models
+    #}
+    {% set models = graph.nodes.values() | selectattr('resource_type', 'equalto', 'model') | list %}
+    
+    {{ log("=== Project Models (" ~ models | length ~ " total) ===", info=True) }}
+    
+    {% for model in models | sort(attribute='name') %}
+        {{ log("", info=True) }}
+        {{ log("--- " ~ model.name ~ " (" ~ model.config.materialized ~ ") ---", info=True) }}
+        {{ log("  Schema: " ~ model.schema, info=True) }}
+        {{ log("  Description: " ~ (model.description | default('No description')), info=True) }}
+        
+        {% if model.columns %}
+            {{ log("  Columns:", info=True) }}
+            {% for col_name, col in model.columns.items() %}
+                {{ log("    - " ~ col_name ~ ": " ~ (col.description | default('No description')), info=True) }}
+            {% endfor %}
+        {% endif %}
     {% endfor %}
-  {% endfor %}
+    
+    {{ log("", info=True) }}
+    {{ log("=== End of Models List ===", info=True) }}
 {% endmacro %}

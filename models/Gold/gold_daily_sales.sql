@@ -1,9 +1,3 @@
-{{
-  config(
-    materialized = 'table'
-  )
-}}
-
 WITH sales_aggregated AS (
     SELECT
         s.date_sk,

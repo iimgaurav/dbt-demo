@@ -7,5 +7,7 @@ select
     region,
     country,
     open_date,
-    sq_ft
+    sq_ft,
+    'bronze' as record_source,
+    current_timestamp() as load_date
 from {{ source('source', 'store') }}

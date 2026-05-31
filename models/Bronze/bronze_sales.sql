@@ -10,5 +10,7 @@ select
     gross_amount,
     discount_amount,
     net_amount,
-    payment_method
+    payment_method,
+    'bronze' as record_source,
+    current_timestamp() as load_date
 from {{ source('source', 'sales') }}
