@@ -7,4 +7,4 @@ select
     supplier_sk,
     list_price,
     uom
-from {{ source('source', 'dim_product') }}
+from {{ source('source', 'product') }}

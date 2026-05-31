@@ -11,4 +11,4 @@ select
     discount_amount,
     net_amount,
     payment_method
-from {{ source('source', 'fact_sales') }}
+from {{ source('source', 'sales') }}

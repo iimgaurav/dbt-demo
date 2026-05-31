@@ -6,15 +6,15 @@ sources:
     schema: source
     description: "Raw source schema for sales, returns, and supporting dimensions."
     tables:
-      - name: fact_sales
+      - name: sales
         description: "Raw sales transactions."
-      - name: dim_customer
+      - name: customer
         description: "Raw customer dimension."
-      - name: dim_product
+      - name: product
         description: "Raw product dimension."
-      - name: dim_date
+      - name: date
         description: "Raw calendar date dimension."
-      - name: dim_store
+      - name: store
         description: "Raw store dimension."
-      - name: fact_returns
+      - name: returns
         description: "Raw return transactions."

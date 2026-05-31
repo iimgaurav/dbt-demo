@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "dbt": {
+      "command": "C:\\Users\\Navneet\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\uv.exe",
+      "args": ["tool", "run", "dbt-mcp"],
+      "env": {
+        "DBT_PROJECT_DIR": "C:\\Users\\Navneet\\Documents\\dbt_proj_to",
+        "DBT_PATH": "C:\\Users\\Navneet\\.local\\bin\\dbt.exe",
+        "DBT_MCP_LOG_LEVEL": "INFO"
+      }
+    }
+  }
+}

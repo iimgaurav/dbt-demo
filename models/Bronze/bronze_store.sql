@@ -8,4 +8,4 @@ select
     country,
     open_date,
     sq_ft
-from {{ source('source', 'dim_store') }}
+from {{ source('source', 'store') }}
