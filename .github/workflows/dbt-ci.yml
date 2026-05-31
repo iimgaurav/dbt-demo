@@ -120,7 +120,10 @@ jobs:
           DBT_DATABRICKS_HOST_NAME: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
           DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
           DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
-          DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG_DEV }}
+          DBT_DATABRICKS_CATALOG_DEV: ${{ secrets.DBT_DATABRICKS_CATALOG_DEV }}
+          DBT_DATABRICKS_CATALOG_UAT: ${{ secrets.DBT_DATABRICKS_CATALOG_UAT }}
+          DBT_DATABRICKS_CATALOG_PROD: ${{ secrets.DBT_DATABRICKS_CATALOG_PROD }}
+          DBT_TARGET: dev
 
       - name: Compile models
         run: dbt compile --target dev
@@ -176,7 +179,10 @@ jobs:
           DBT_DATABRICKS_HOST_NAME: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
           DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
           DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
-          DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG_UAT }}
+          DBT_DATABRICKS_CATALOG_DEV: ${{ secrets.DBT_DATABRICKS_CATALOG_DEV }}
+          DBT_DATABRICKS_CATALOG_UAT: ${{ secrets.DBT_DATABRICKS_CATALOG_UAT }}
+          DBT_DATABRICKS_CATALOG_PROD: ${{ secrets.DBT_DATABRICKS_CATALOG_PROD }}
+          DBT_TARGET: uat
 
       - name: Compile models (pre-build check)
         run: dbt compile --target uat
@@ -248,7 +254,10 @@ jobs:
           DBT_DATABRICKS_HOST_NAME: ${{ secrets.DBT_DATABRICKS_HOST_NAME }}
           DBT_DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
           DBT_DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
-          DBT_DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG_PROD }}
+          DBT_DATABRICKS_CATALOG_DEV: ${{ secrets.DBT_DATABRICKS_CATALOG_DEV }}
+          DBT_DATABRICKS_CATALOG_UAT: ${{ secrets.DBT_DATABRICKS_CATALOG_UAT }}
+          DBT_DATABRICKS_CATALOG_PROD: ${{ secrets.DBT_DATABRICKS_CATALOG_PROD }}
+          DBT_TARGET: prod
 
       - name: Compile models (pre-build check)
         run: dbt compile --target prod
