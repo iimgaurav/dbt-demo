@@ -8,4 +8,4 @@ select
     returned_qty,
     return_reason,
     refund_amount
-from {{ source('source', 'fact_returns') }}
+from {{ source('source', 'returns') }}
